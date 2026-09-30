@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db
@@ -60,6 +60,7 @@ async def update_transaction(
     return TransactionResponse.model_validate(tx)
 
 
-@router.delete("/{transaction_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete transaction")
+@router.delete("/{transaction_id}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response, summary="Delete transaction")
 async def delete_transaction(transaction_id: int, db: AsyncSession = Depends(get_db)):
     await TransactionService.delete_transaction(db, transaction_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

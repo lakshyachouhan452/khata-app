@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -261,13 +261,14 @@ async def update_customer(
 @router.delete(
     "/customers/{customer_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary="Delete customer and associated transactions",
     tags=["Customers"],
 )
 async def delete_customer(
     customer_id: int,
     db: AsyncSession = Depends(get_db),
-) -> None:
+):
     customer = await db.get(Customer, customer_id)
     if not customer:
         raise HTTPException(
@@ -276,6 +277,7 @@ async def delete_customer(
         )
     await db.delete(customer)
     await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # ============================================================================
@@ -424,13 +426,14 @@ async def update_transaction(
 @router.delete(
     "/transactions/{transaction_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary="Delete a transaction",
     tags=["Transactions"],
 )
 async def delete_transaction(
     transaction_id: int,
     db: AsyncSession = Depends(get_db),
-) -> None:
+):
     transaction = await db.get(Transaction, transaction_id)
     if not transaction:
         raise HTTPException(
@@ -448,3 +451,4 @@ async def delete_transaction(
 
     await db.delete(transaction)
     await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
