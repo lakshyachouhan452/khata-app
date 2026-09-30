@@ -8,11 +8,18 @@ raw_url = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./khata.db")
 
 # Automatically fix PostgreSQL scheme from Neon/Render/Supabase for SQLAlchemy asyncpg
 if raw_url.startswith("postgres://"):
-    DATABASE_URL = raw_url.replace("postgres://", "postgresql+asyncpg://", 1)
+    raw_url = raw_url.replace("postgres://", "postgresql+asyncpg://", 1)
 elif raw_url.startswith("postgresql://") and not raw_url.startswith("postgresql+asyncpg://"):
-    DATABASE_URL = raw_url.replace("postgresql://", "postgresql+asyncpg://", 1)
-else:
-    DATABASE_URL = raw_url
+    raw_url = raw_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+# Handle SSL query parameter differences in asyncpg (convert sslmode -> ssl)
+if "sslmode=require" in raw_url:
+    raw_url = raw_url.replace("sslmode=require", "ssl=require")
+elif "sslmode=" in raw_url:
+    import re
+    raw_url = re.sub(r"sslmode=[^&]+", "ssl=require", raw_url)
+
+DATABASE_URL = raw_url
 
 connect_args = {}
 if "sqlite" in DATABASE_URL:

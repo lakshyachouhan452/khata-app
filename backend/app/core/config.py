@@ -22,6 +22,10 @@ class Settings(BaseSettings):
             v = v.replace("postgres://", "postgresql+asyncpg://", 1)
         elif v.startswith("postgresql://") and not v.startswith("postgresql+asyncpg://"):
             v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        if "sslmode=require" in v:
+            v = v.replace("sslmode=require", "ssl=require")
+        elif "sslmode=" in v:
+            v = re.sub(r"sslmode=[^&]+", "ssl=require", v)
         return v
 
     @field_validator("CORS_ORIGINS", mode="before")

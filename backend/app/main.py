@@ -22,18 +22,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             await conn.run_sync(Base.metadata.create_all)
         logger.info(f"Database initialized successfully using: {settings.DATABASE_URL.split('@')[-1]}")
     except Exception as e:
-        logger.error(
-            "\n" + "=" * 70 + "\n"
-            "DATABASE CONNECTION ERROR:\n"
-            f"Could not connect to database at: {settings.DATABASE_URL}\n\n"
-            "SOLUTION:\n"
-            "1. If using PostgreSQL: make sure PostgreSQL is running on port 5432\n"
-            "   and that the credentials in 'backend/.env' are correct.\n"
-            "2. If you want instant zero-setup local dev without PostgreSQL:\n"
-            "   Set in backend/.env: DATABASE_URL=\"sqlite+aiosqlite:///./khata.db\"\n"
-            + "=" * 70
+        logger.warning(
+            f"Database initialization warning: {e}. The server will start, but check your DATABASE_URL."
         )
-        raise e
 
     # 2. Background task: Periodic overdue transactions checker
     task = asyncio.create_task(periodic_overdue_checker_task(interval_seconds=3600))

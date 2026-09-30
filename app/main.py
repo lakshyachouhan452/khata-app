@@ -10,12 +10,19 @@ from app.database import Base, engine
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    # Startup: Create tables if they do not exist
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    # Startup: Create tables if database connection is available
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        print("INFO: Database tables verified and initialized successfully.")
+    except Exception as e:
+        print(f"WARNING: Database initialization encountered an error: {e}")
     yield
     # Shutdown: Clean up database engine connections
-    await engine.dispose()
+    try:
+        await engine.dispose()
+    except Exception:
+        pass
 
 
 app = FastAPI(
